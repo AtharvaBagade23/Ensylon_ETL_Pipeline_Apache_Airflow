@@ -1,45 +1,217 @@
-Overview
-========
+# ETL Weather Data Pipeline using Apache Airflow
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+## 📌 Project Overview
 
-Project Contents
-================
+This project demonstrates the design and implementation of an **ETL (Extract, Transform, Load) data pipeline** using **Apache Airflow**.
+The pipeline extracts weather data from an external API, performs data cleaning and preprocessing, and loads the processed data into a database for further analysis.
 
-Your Astro project contains the following files and folders:
+The goal of this project is to understand **data engineering workflows, pipeline orchestration, and data preprocessing techniques** used in real-world ETL systems.
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://www.astronomer.io/docs/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+---
 
-Deploy Your Project Locally
-===========================
+# ⚙️ Tech Stack
 
-Start Airflow on your local machine by running 'astro dev start'.
+* Python
+* Apache Airflow
+* Docker
+* SQLite
+* Pandas
+* Weather API
+* Git & GitHub
 
-This command will spin up five Docker containers on your machine, each for a different Airflow component:
+---
 
-- Postgres: Airflow's Metadata Database
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- DAG Processor: The Airflow component responsible for parsing DAGs
-- API Server: The Airflow component responsible for serving the Airflow UI and API
-- Triggerer: The Airflow component responsible for triggering deferred tasks
+# 📂 Project Structure
 
-When all five containers are ready the command will open the browser to the Airflow UI at http://localhost:8080/. You should also be able to access your Postgres Database at 'localhost:5432/postgres' with username 'postgres' and password 'postgres'.
+```
+.
+├── dags/
+│   └── weather_etl_dag.py
+│
+├── tests/
+│   └── dags/
+│
+├── Dockerfile
+├── requirements.txt
+├── packages.txt
+├── .gitignore
+├── .dockerignore
+└── README.md
+```
 
-Note: If you already have either of the above ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
+**Folder Description**
 
-Deploy Your Project to Astronomer
-=================================
+| Folder/File      | Description                                  |
+| ---------------- | -------------------------------------------- |
+| dags             | Contains Airflow DAG files for ETL pipelines |
+| tests            | Contains test scripts for validating DAGs    |
+| Dockerfile       | Container configuration for running Airflow  |
+| requirements.txt | Python dependencies                          |
+| packages.txt     | System dependencies                          |
+| README.md        | Project documentation                        |
 
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
+---
 
-Contact
-=======
+# 🔄 ETL Pipeline Workflow
 
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
+## 1️⃣ Extract
+
+Weather data is extracted from an external API using Python.
+The API returns structured data containing:
+
+* Timestamp
+* Temperature
+* Humidity
+* Weather conditions
+
+The data is fetched periodically through an **Airflow DAG scheduler**.
+
+---
+
+## 2️⃣ Transform
+
+The transformation stage focuses on **data cleaning and preprocessing**.
+
+Transformations performed:
+
+* Handling missing values
+* Removing duplicate records
+* String normalization (e.g., city names like *Hyd → Hyderabad*)
+* Data formatting
+* Data validation
+
+Libraries used:
+
+* **Pandas**
+* **NumPy**
+
+---
+
+## 3️⃣ Load
+
+After cleaning the dataset, the processed data is stored in a **SQLite database** for analysis.
+
+Benefits of storing the data:
+
+* Easy querying
+* Structured storage
+* Data analysis capability
+
+---
+
+# 🚀 How the Pipeline Runs
+
+1. Airflow scheduler triggers the DAG.
+2. The **Extract task** pulls weather data from the API.
+3. The **Transform task** cleans and processes the data.
+4. The **Load task** stores the data in the SQLite database.
+5. Airflow logs and monitors each step.
+
+---
+
+# 📚 What I Learned
+
+During this project, I learned:
+
+* How **ETL pipelines work in real-world data engineering systems**
+* How to use **Apache Airflow for orchestration**
+* Writing **DAGs and scheduling workflows**
+* Handling **missing data and inconsistencies**
+* Data preprocessing using **Pandas**
+* Managing dependencies using **Docker**
+* Using **Git and GitHub for version control**
+
+---
+
+# ⚠️ Challenges Faced
+
+### 1️⃣ Missing Values in Dataset
+
+Some API responses had missing values for certain fields.
+
+**Solution**
+
+* Applied data cleaning techniques using Pandas
+* Replaced missing values with appropriate defaults or removed invalid rows.
+
+---
+
+### 2️⃣ Duplicate Records
+
+Duplicate entries appeared when data was fetched multiple times.
+
+**Solution**
+
+* Implemented duplicate removal using:
+
+```
+drop_duplicates()
+```
+
+---
+
+### 3️⃣ String Inconsistencies
+
+City names appeared in different formats such as:
+
+```
+Hyd
+Hyderabad
+HYD
+```
+
+**Solution**
+
+Implemented **string normalization and fuzzy matching** techniques to standardize city names.
+
+---
+
+### 4️⃣ Pipeline Debugging
+
+Initial DAG execution errors occurred due to dependency and environment issues.
+
+**Solution**
+
+* Checked Airflow logs
+* Fixed dependency issues in `requirements.txt`
+* Used Docker to maintain a consistent environment
+
+---
+
+# 📊 Outcome
+
+The project successfully demonstrates a **fully functional ETL pipeline** with the following outcomes:
+
+* Automated data extraction
+* Clean and structured dataset
+* Scheduled workflow using Apache Airflow
+* Reliable data storage in SQLite
+* Reproducible and scalable pipeline design
+
+This project provides a **strong foundation for building production-grade data pipelines**.
+
+---
+
+# 📈 Future Improvements
+
+Possible improvements include:
+
+* Integrating **cloud storage (AWS S3 / GCP)**
+* Adding **data visualization dashboards**
+* Using **PostgreSQL instead of SQLite**
+* Implementing **real-time streaming pipelines**
+* Adding more advanced **data validation checks**
+
+---
+
+# 👨‍💻 Author
+
+**Atharva Bagade**
+
+Data Engineering & AI Enthusiast
+
+---
+
+# ⭐ Acknowledgement
+
+This project was built as part of a **data engineering learning exercise to understand ETL pipelines and workflow orchestration using Apache Airflow**.
